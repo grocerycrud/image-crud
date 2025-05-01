@@ -1,4 +1,5 @@
-<?php namespace App\Libraries;
+<?php namespace ImageCrud\ThirdParty;
+
 /*
  * Image_Moo library
  *
@@ -208,7 +209,7 @@ class ImageMoo
 
 	private function is_gd_image( $image ) {
 
-		return ( (is_resource($image) && get_resource_type( $image ) === 'gd') || (is_object( $image ) && $image instanceof GdImage) );
+		return ( (is_resource($image) && get_resource_type( $image ) === 'gd') || (is_object( $image ) && $image instanceof \App\Libraries\GdImage) );
 	}
 
 	private function _check_image()
@@ -428,7 +429,7 @@ class ImageMoo
 					break;
 			}
 		}
-		catch (Exception $e)
+		catch (\App\Libraries\Exception $e)
 		{
 			$this->set_error('Exception loading '.$filename.' - '.$e->getMessage());
 		}
