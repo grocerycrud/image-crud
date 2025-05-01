@@ -9,5 +9,6 @@ Requirements:
 - Codeigniter version 4
 - PHP version 8 or higher
 - PHP GD2 extension
+- Composer
 
 https://www.grocerycrud.com/v1.x/image-crud
