@@ -1,0 +1,16 @@
+{
+  "name": "grocerycrud/image-crud",
+  "version": "1.0.0",
+  "keywords" : [],
+  "require" : {
+    "php": "^8.0"
+  },
+  "autoload" : {
+    "psr-0" : {
+      "ImageCrud" : "src/"
+    }
+  },
+  "archive": {
+    "exclude": ["/vendor", "/.idea", "/composer.lock"]
+  }
+}
