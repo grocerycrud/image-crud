@@ -371,19 +371,39 @@ class ImageCrud {
 
     protected function _delete_file($id)
     {
-    	$this->db->where($this->primary_key,$id);
-    	$result = $this->db->get($this->table_name)->row();
+        $result = $this->db->table($this->table_name)
+            ->where($this->primary_key, $id)
+            ->get()
+            ->getRow();
 
-    	unlink( $this->image_path.'/'.$result->{$this->url_field} );
-    	unlink( $this->image_path.'/'.$this->thumbnail_prefix.$result->{$this->url_field} );
+        if ($result) {
+            // Delete the main image file if it exists
+            $image_path = $this->image_path . '/' . $result->{$this->url_field};
+            if (file_exists($image_path)) {
+                unlink($image_path);
+            }
 
-    	$this->db->delete($this->table_name, array($this->primary_key => $id));
+            // Delete the thumbnail file if it exists
+            $thumbnail_path = $this->image_path . '/' . $this->thumbnail_prefix . $result->{$this->url_field};
+            if (file_exists($thumbnail_path)) {
+                unlink($thumbnail_path);
+            }
+
+            // Delete the record from the database
+            $this->db->table($this->table_name)
+                ->where($this->primary_key, $id)
+                ->delete();
+        }
     }
 
     protected function _get_delete_url($value)
     {
-    	$rsegments_array = $this->ci->uri->rsegment_array();
+    	$rsegments_array = $this->get_uri_segment_array();
     	return site_url($rsegments_array[1].'/'.$rsegments_array[2].'/delete_file/'.$value);
+    }
+
+    protected function get_uri_segment_array() {
+        return explode('/', '/' . uri_string());
     }
 
     protected function _get_photos($relation_value = null)
@@ -593,7 +613,12 @@ class ImageCrud {
 
 					$this->_delete_file($id);
 
-					redirect($_SERVER['HTTP_REFERER']);
+                    if (isset($_SERVER['HTTP_REFERER'])) {
+                        header("Location: " . $_SERVER['HTTP_REFERER']);
+                    } else {
+                        header("Location: " . base_url());
+                    }
+                    exit;
 				break;
 
 				case 'ordering':
