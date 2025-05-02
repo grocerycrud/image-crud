@@ -51,6 +51,8 @@ class ImageCrud {
 
 	protected $where = array();
 
+    protected $db = null;
+
 	/**
 	 *
 	 * @var Image_moo
@@ -58,7 +60,7 @@ class ImageCrud {
 	private $image_moo = null;
 
 	function __construct() {
-
+        $this->db = \Config\Database::connect();
 	}
 
 	function set_table($table_name)
@@ -241,7 +243,6 @@ class ImageCrud {
         $languagePath = (__DIR__ . '/../I18n/') . $this->language . '.php';
 
         if (file_exists($languagePath)) {
-            // Good old fashion way :)
             $i18n = include($languagePath);
         } else {
             throw new \Exception('Language path "' . $languagePath . '" does not exist');
@@ -350,14 +351,14 @@ class ImageCrud {
     	$counter = 1;
 		foreach($post_array as $photo_id)
 		{
-			$this->ci->db->update($this->table_name, array($this->priority_field => $counter), array($this->primary_key => $photo_id));
+			$this->db->update($this->table_name, array($this->priority_field => $counter), array($this->primary_key => $photo_id));
 			$counter++;
 		}
     }
 
     protected function _insert_title($primary_key, $value)
     {
-		$this->ci->db->update($this->table_name, array($this->title_field => $value), array($this->primary_key => $primary_key));
+		$this->db->update($this->table_name, array($this->title_field => $value), array($this->primary_key => $primary_key));
     }
 
     protected function _insert_table($file_name, $relation_id = null)
@@ -365,18 +366,18 @@ class ImageCrud {
     	$insert = array($this->url_field => $file_name);
     	if(!empty($relation_id))
     		$insert[$this->relation_field] = $relation_id;
-    	$this->ci->db->insert($this->table_name, $insert);
+    	$this->db->insert($this->table_name, $insert);
     }
 
     protected function _delete_file($id)
     {
-    	$this->ci->db->where($this->primary_key,$id);
-    	$result = $this->ci->db->get($this->table_name)->row();
+    	$this->db->where($this->primary_key,$id);
+    	$result = $this->db->get($this->table_name)->row();
 
     	unlink( $this->image_path.'/'.$result->{$this->url_field} );
     	unlink( $this->image_path.'/'.$this->thumbnail_prefix.$result->{$this->url_field} );
 
-    	$this->ci->db->delete($this->table_name, array($this->primary_key => $id));
+    	$this->db->delete($this->table_name, array($this->primary_key => $id));
     }
 
     protected function _get_delete_url($value)
@@ -389,18 +390,18 @@ class ImageCrud {
     {
     	if(!empty($this->priority_field))
     	{
-    		$this->ci->db->order_by($this->priority_field);
+    		$this->db->order_by($this->priority_field);
     	}
     	if(!empty($this->where)) {
 			foreach($this->where as $where) {
-				$this->ci->db->where($where[0],$where[1],$where[2]);
+				$this->db->where($where[0],$where[1],$where[2]);
 			}
     	}
     	if(!empty($relation_value))
     	{
-    		$this->ci->db->where($this->relation_field, $relation_value);
+    		$this->db->where($this->relation_field, $relation_value);
     	}
-    	$results = $this->ci->db->get($this->table_name)->result();
+    	$results = $this->db->table($this->table_name)->get()->getResult();
 
     	$thumbnail_url = !empty($this->thumbnail_path) ? $this->thumbnail_path : $this->image_path;
 
@@ -447,10 +448,9 @@ class ImageCrud {
 
 	protected function getState()
 	{
-		$rsegments_array = $this->ci->uri->rsegment_array();
+		$rsegments_array = explode('/', '/'. uri_string());;
 
-		if(isset($rsegments_array[3]) && is_numeric($rsegments_array[3]))
-		{
+		if(isset($rsegments_array[3]) && is_numeric($rsegments_array[3])) {
 			$upload_url = site_url($rsegments_array[1].'/'.$rsegments_array[2].'/upload_file/'.$rsegments_array[3]);
 			$ajax_list_url  = site_url($rsegments_array[1].'/'.$rsegments_array[2].'/'.$rsegments_array[3].'/ajax_list');
 			$ordering_url  = site_url($rsegments_array[1].'/'.$rsegments_array[2].'/ordering');
@@ -464,9 +464,10 @@ class ImageCrud {
 
 
 			return (object)$state;
-		}
-		elseif( (empty($rsegments_array[3]) && empty($this->relation_field)) || (!empty($rsegments_array[3]) &&  $rsegments_array[3] == 'ajax_list'))
-		{
+		} elseif(
+            (empty($rsegments_array[3]) && empty($this->relation_field)) ||
+            (!empty($rsegments_array[3]) &&  $rsegments_array[3] == 'ajax_list')
+        )  {
 			$upload_url = site_url($rsegments_array[1].'/'.$rsegments_array[2].'/upload_file');
 			$ajax_list_url  = site_url($rsegments_array[1].'/'.$rsegments_array[2].'/ajax_list');
 			$ordering_url  = site_url($rsegments_array[1].'/'.$rsegments_array[2].'/ordering');
@@ -479,9 +480,7 @@ class ImageCrud {
 			$state['insert_title_url'] = $insert_title_url;
 
 			return (object)$state;
-		}
-		elseif(isset($rsegments_array[3]) && $rsegments_array[3] == 'upload_file')
-		{
+		} elseif(isset($rsegments_array[3]) && $rsegments_array[3] == 'upload_file') {
 			#region Just rename my file
 				$new_file_name = '';
 				//$old_file_name = $this->_to_greeklish($_GET['qqfile']);
@@ -508,19 +507,16 @@ class ImageCrud {
 				$results['relation_value'] = $rsegments_array[4];
 			}
 			return (object)$results;
-		}
-		elseif(isset($rsegments_array[3]) && isset($rsegments_array[4]) && $rsegments_array[3] == 'delete_file' && is_numeric($rsegments_array[4]))
-		{
+		} elseif(
+            isset($rsegments_array[3]) && isset($rsegments_array[4]) &&
+            $rsegments_array[3] == 'delete_file' && is_numeric($rsegments_array[4])
+        ) {
 			$state = array( 'name' => 'delete_file', 'id' => $rsegments_array[4]);
 			return (object)$state;
-		}
-		elseif(isset($rsegments_array[3]) && $rsegments_array[3] == 'ordering')
-		{
+		} elseif(isset($rsegments_array[3]) && $rsegments_array[3] == 'ordering') {
 			$state = array( 'name' => 'ordering');
 			return (object)$state;
-		}
-		elseif(isset($rsegments_array[3]) && $rsegments_array[3] == 'insert_title')
-		{
+		} elseif(isset($rsegments_array[3]) && $rsegments_array[3] == 'insert_title') {
 			$state = array( 'name' => 'insert_title');
 			return (object)$state;
 		}
