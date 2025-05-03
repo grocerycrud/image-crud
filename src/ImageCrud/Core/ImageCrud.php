@@ -503,8 +503,10 @@ class ImageCrud {
 				$new_file_name = '';
 
                 $request = \Config\Services::request();
-				$old_file_name = $this->_convert_foreign_characters($request->getGet('qqfile'));
+                $old_file_name_raw = $request->getGet('qqfile');
+				$old_file_name = $this->_convert_foreign_characters($old_file_name_raw);
 				$max = strlen($old_file_name);
+
 				for($i=0; $i< $max;$i++)
 				{
 					$numMatches = preg_match('/^[A-Za-z0-9.-_]+$/', $old_file_name[$i], $matches);
@@ -821,6 +823,13 @@ class ImageUploadHandler
 		return $error;
 	}
 
+    private function _convert_foreign_characters($str_i)
+    {
+        $transliteration_characters = include(__DIR__ . '/../Config/transliteration_characters.php');
+
+        return preg_replace(array_keys($transliteration_characters), array_values($transliteration_characters), $str_i);
+    }
+
 	private function trim_file_name($name, $type) {
 		// Remove path information and dots around the filename, to prevent uploading
 		// into different directories or replacing hidden system files.
@@ -831,6 +840,8 @@ class ImageUploadHandler
 				preg_match('/^image\/(gif|jpe?g|png)/', $type, $matches)) {
 			$file_name .= '.'.$matches[1];
 		}
+
+        $file_name = $this->_convert_foreign_characters($file_name);
 
 		//Ensure that we don't have disallowed characters and add a unique id just to ensure that the file name will be unique
 		$file_name = substr(uniqid(),-5).'-'.preg_replace("/([^a-zA-Z0-9\.\-\_]+?){1}/i", '-', $file_name);
