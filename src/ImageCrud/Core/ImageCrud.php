@@ -188,7 +188,7 @@ class ImageCrud {
 		$ext = pathinfo($view, PATHINFO_EXTENSION);
 		$file = ($ext == '') ? $view.'.php' : $view;
 
-		$view_file = 'assets/image_crud/views/';
+		$view_file = __DIR__ . '/../Views/';
 
 		if (file_exists($view_file.$file))
 		{
