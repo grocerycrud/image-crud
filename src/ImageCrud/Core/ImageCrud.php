@@ -451,12 +451,9 @@ class ImageCrud {
 
 	protected function _convert_foreign_characters($str_i)
 	{
-		include('assets/image_crud/config/translit_chars.php');
-		if ( ! isset($translit_characters))
-		{
-			return $str_i;
-		}
-		return preg_replace(array_keys($translit_characters), array_values($translit_characters), $str_i);
+        $transliteration_characters = include(__DIR__ . '/../Config/transliteration_characters.php');
+
+		return preg_replace(array_keys($transliteration_characters), array_values($transliteration_characters), $str_i);
 	}
 
 	protected function _create_thumbnail($image_path, $thumbnail_path)
