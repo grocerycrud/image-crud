@@ -209,7 +209,7 @@ class ImageMoo
 
 	private function is_gd_image( $image ) {
 
-		return ( (is_resource($image) && get_resource_type( $image ) === 'gd') || (is_object( $image ) && $image instanceof \App\Libraries\GdImage) );
+		return ( (is_resource($image) && get_resource_type( $image ) === 'gd') || (is_object( $image ) && $image instanceof \GdImage) );
 	}
 
 	private function _check_image()

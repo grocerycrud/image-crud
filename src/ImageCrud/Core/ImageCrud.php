@@ -55,15 +55,16 @@ class ImageCrud {
 
 	/**
 	 *
-	 * @var Image_moo
+	 * @var \ImageCrud\ThirdParty\ImageMoo
 	 */
 	private $image_moo = null;
 
 	function __construct() {
         $this->db = \Config\Database::connect();
+        $this->image_moo = new ImageMoo();
 	}
 
-	function set_table($table_name)
+	function setTable($table_name)
 	{
 		$this->table_name = $table_name;
 
@@ -83,7 +84,7 @@ class ImageCrud {
 		return $this;
 	}
 
-	function set_ordering_field($field_name)
+	function setOrderingField($field_name)
 	{
 		$this->priority_field = $field_name;
 
@@ -104,7 +105,7 @@ class ImageCrud {
 		return $this;
 	}
 
-	function set_url_field($url_field)
+	function setUrlField($url_field)
 	{
 		$this->url_field = $url_field;
 
@@ -118,7 +119,7 @@ class ImageCrud {
 		return $this;
 	}
 
-	function set_image_path($image_path)
+	function setImagePath($image_path)
 	{
 		$this->image_path = $image_path;
 
@@ -281,7 +282,7 @@ class ImageCrud {
 	 * @example english
 	 * @param string $language
 	 */
-	public function set_language($language)
+	public function setLanguage($language)
 	{
 		$this->language = $language;
 
@@ -324,8 +325,6 @@ class ImageCrud {
 		}
 
 		if (!empty($upload_response)) {
-			$ci = &get_instance();
-			$ci->load->library('ImageMoo');
 
 			$filename = $upload_response->name;
 
@@ -335,7 +334,7 @@ class ImageCrud {
 			list($width, $height) = getimagesize($path);
 			if($width > $this->max_width || $height > $this->max_height)
 			{
-				$ci->image_moo->load($path)->resize($this->max_width,$this->max_height)->save($path,true);
+                $this->image_moo->load($path)->resize($this->max_width,$this->max_height)->save($path,true);
 			}
 			/* ------------------------------------- */
 
@@ -351,22 +350,23 @@ class ImageCrud {
     	$counter = 1;
 		foreach($post_array as $photo_id)
 		{
-			$this->db->update($this->table_name, array($this->priority_field => $counter), array($this->primary_key => $photo_id));
+			$this->db->table($this->table_name)->update(array($this->priority_field => $counter), array($this->primary_key => $photo_id));
 			$counter++;
 		}
     }
 
     protected function _insert_title($primary_key, $value)
     {
-		$this->db->update($this->table_name, array($this->title_field => $value), array($this->primary_key => $primary_key));
+		$this->db->table($this->table_name)->update(array($this->title_field => $value), array($this->primary_key => $primary_key));
     }
 
     protected function _insert_table($file_name, $relation_id = null)
     {
     	$insert = array($this->url_field => $file_name);
-    	if(!empty($relation_id))
-    		$insert[$this->relation_field] = $relation_id;
-    	$this->db->insert($this->table_name, $insert);
+    	if(!empty($relation_id)) {
+            $insert[$this->relation_field] = $relation_id;
+        }
+    	$this->db->table($this->table_name)->insert($insert);
     }
 
     protected function _delete_file($id)
@@ -408,22 +408,23 @@ class ImageCrud {
 
     protected function _get_photos($relation_value = null)
     {
-    	if(!empty($this->priority_field))
-    	{
-    		$this->db->order_by($this->priority_field);
-    	}
-    	if(!empty($this->where)) {
-			foreach($this->where as $where) {
-				$this->db->where($where[0],$where[1],$where[2]);
-			}
-    	}
-    	if(!empty($relation_value))
-    	{
-    		$this->db->where($this->relation_field, $relation_value);
-    	}
-    	$results = $this->db->table($this->table_name)->get()->getResult();
+        $builder = $this->db->table($this->table_name);
 
-    	$thumbnail_url = !empty($this->thumbnail_path) ? $this->thumbnail_path : $this->image_path;
+        if (!empty($this->priority_field)) {
+            $builder->orderBy($this->priority_field);
+        }
+
+        if (!empty($this->where)) {
+            foreach ($this->where as $where) {
+                $builder->where($where[0], $where[1], $where[2]);
+            }
+        }
+
+        if (!empty($relation_value)) {
+            $builder->where($this->relation_field, $relation_value);
+        }
+
+        $results = $builder->get()->getResult();
 
     	$final_results = array();
     	foreach($results as $num => $row)
@@ -459,7 +460,7 @@ class ImageCrud {
 	}
 
 	protected function _create_thumbnail($image_path, $thumbnail_path)
-	{
+    {
 		$this->image_moo
 			->load($image_path)
 			->resize_crop(90,60)
@@ -503,8 +504,9 @@ class ImageCrud {
 		} elseif(isset($rsegments_array[3]) && $rsegments_array[3] == 'upload_file') {
 			#region Just rename my file
 				$new_file_name = '';
-				//$old_file_name = $this->_to_greeklish($_GET['qqfile']);
-				$old_file_name = $this->_convert_foreign_characters($_GET['qqfile']);
+
+                $request = \Config\Services::request();
+				$old_file_name = $this->_convert_foreign_characters($request->getGet('qqfile'));
 				$max = strlen($old_file_name);
 				for($i=0; $i< $max;$i++)
 				{
@@ -521,7 +523,7 @@ class ImageCrud {
 				$file_name = substr( substr( uniqid(), 9,13).'-'.$new_file_name , 0, 100) ;
 			#endregion
 
-			$results = array( 'name' => 'upload_file', 'file_name' => $file_name);
+			$results = array( 'name' => 'upload_file', 'file_name' => $file_name, 'relation_value' => null);
 			if(isset($rsegments_array[4]) && is_numeric($rsegments_array[4]))
 			{
 				$results['relation_value'] = $rsegments_array[4];
@@ -546,8 +548,6 @@ class ImageCrud {
 	{
 
 		$this->_load_language();
-
-		$this->image_moo = new ImageMoo();
 
 		$state_info = $this->getState();
 
@@ -868,7 +868,7 @@ class ImageUploadHandler
 	}
 
 	private function handle_file_upload($uploaded_file, $name, $size, $type, $error) {
-		$file = new stdClass();
+		$file = new \stdClass();
 		$file->name = $this->trim_file_name($name, $type);
 		$file->size = intval($size);
 		$file->type = $type;
@@ -972,7 +972,7 @@ class ImageUploadHandler
 		$redirect = isset($_REQUEST['redirect']) ?
 		stripslashes($_REQUEST['redirect']) : null;
 		if ($redirect) {
-			header('Location: '.sprintf($redirect, rawurlencode($json)));
+			header('Location: '.sprintf($redirect, rawurlencode($redirect)));
 			return;
 		}
 		if (isset($_SERVER['HTTP_ACCEPT']) &&
