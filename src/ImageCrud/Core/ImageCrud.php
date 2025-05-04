@@ -47,7 +47,6 @@ class ImageCrud {
 
 	protected $language = null;
 	protected $lang_strings = array();
-	protected $default_language_path = 'assets/image_crud/languages';
 
 	protected $where = array();
 
