@@ -13,5 +13,6 @@
   },
   "archive": {
     "exclude": ["/vendor", "/.idea", "/composer.lock"]
-  }
+  },
+  "license": "MIT"
 }
