@@ -13,7 +13,7 @@ class ImageCrudPublisher extends Publisher
      *
      * @var string
      */
-    protected $source = FCPATH . '/../vendor/grocery-crud/image-crud/public/';
+    protected $source = FCPATH . '/../vendor/grocerycrud/image-crud/public/';
 
     /**
      * FCPATH is always the default destination,
