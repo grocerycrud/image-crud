@@ -236,7 +236,18 @@ class ImageCrud {
 	 */
 	private function _load_language()
 	{
-        $config = (new \Config\ImageCrud())->getDefaultConfig();
+        // Default config values in case the class doesn't exist
+        $default_config = [
+            'default_language' => 'English',
+            'assets_folder' => base_url() . '/vendor/image-crud/'
+        ];
+
+        if (class_exists('\Config\ImageCrud')) {
+            $config = (new \Config\ImageCrud())->getDefaultConfig();
+        } else {
+            $config = $default_config;
+        }
+
 		if($this->language === null) {
 			$this->language = $config['default_language'];
         }
