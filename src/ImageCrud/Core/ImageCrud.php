@@ -555,6 +555,7 @@ class ImageCrud {
 				case 'list':
 					$photos = isset($state_info->relation_value) ? $this->_get_photos($state_info->relation_value) : $this->_get_photos();
 					$this->_library_view('list.php',array(
+                        'assets_folder' => 'vendor/image-crud',
 						'upload_url' => $state_info->upload_url,
 						'insert_title_url' => $state_info->insert_title_url,
 						'photos' => $photos,
