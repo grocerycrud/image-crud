@@ -35,6 +35,7 @@ class ImageCrud {
 	protected $ci = null;
 	protected $thumbnail_prefix = 'thumb__';
 	protected $views_as_string = '';
+    protected $assets_folder = '';
 	protected $css_files = array();
 	protected $js_files = array();
 
@@ -170,12 +171,12 @@ class ImageCrud {
 
 	public function set_css($css_file)
 	{
-		$this->css_files[sha1($css_file)] = base_url().$css_file;
+		$this->css_files[sha1($css_file)] = $this->assets_folder . $css_file;
 	}
 
 	public function set_js($js_file)
 	{
-		$this->js_files[sha1($js_file)] = base_url().$js_file;
+		$this->js_files[sha1($js_file)] = $this->assets_folder . $js_file;
 	}
 
 	protected function _library_view($view, $vars = array(), $return = FALSE)
@@ -239,6 +240,8 @@ class ImageCrud {
 		if($this->language === null) {
 			$this->language = $config['default_language'];
         }
+
+        $this->assets_folder = $config['assets_folder'];
 
         $languagePath = (__DIR__ . '/../I18n/') . $this->language . '.php';
 
@@ -555,7 +558,6 @@ class ImageCrud {
 				case 'list':
 					$photos = isset($state_info->relation_value) ? $this->_get_photos($state_info->relation_value) : $this->_get_photos();
 					$this->_library_view('list.php',array(
-                        'assets_folder' => 'vendor/image-crud/',
 						'upload_url' => $state_info->upload_url,
 						'insert_title_url' => $state_info->insert_title_url,
 						'photos' => $photos,

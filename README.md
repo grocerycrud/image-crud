@@ -11,4 +11,6 @@ Requirements:
 - PHP GD2 extension
 - Composer
 
+Limitations:
+
 https://www.grocerycrud.com/v1.x/image-crud

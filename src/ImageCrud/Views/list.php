@@ -8,18 +8,17 @@
  * @var string $insert_title_url
  * @var string $ordering_url
  * @var string $title_field
- * @var string $assets_folder
  */
-	$this->set_css($assets_folder . 'css/fineuploader.css');
-	$this->set_css($assets_folder . 'css/photogallery.css');
-	$this->set_css($assets_folder . 'css/colorbox.css');
+	$this->set_css('css/fineuploader.css');
+	$this->set_css('css/photogallery.css');
+	$this->set_css('css/colorbox.css');
 
-	$this->set_js($assets_folder . 'js/jquery-1.8.2.min.js');
-	$this->set_js($assets_folder . 'js/jquery-ui-1.9.0.custom.min.js');
+	$this->set_js('js/jquery-1.8.2.min.js');
+	$this->set_js('js/jquery-ui-1.9.0.custom.min.js');
 
-	$this->set_js($assets_folder . 'js/jquery.fineuploader-3.5.0.min.js');
+	$this->set_js( 'js/jquery.fineuploader-3.5.0.min.js');
 
-	$this->set_js($assets_folder . 'js/jquery.colorbox-min.js');
+	$this->set_js('js/jquery.colorbox-min.js');
 ?>
 <script>
 $(function(){
