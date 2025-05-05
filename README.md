@@ -13,6 +13,12 @@ Requirements:
 - PHP GD2 extension
 - Composer
 
+Installation:
+
+```
+composer require grocerycrud/image-crud
+```
+
 Limitations:
 
 Since this is basically the same library as we used for Codeigniter 3, it has the same limitations.
