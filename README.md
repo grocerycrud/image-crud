@@ -15,15 +15,54 @@ Requirements:
 
 Installation:
 
-```
+```bash
 composer require grocerycrud/image-crud
+cp vendor/grocerycrud/image-crud/src/ImageCrud/ImageCrudPublisher.php app/Publishers
+php spark publish
+```
+
+Controller Example:
+
+```php
+<?php
+
+namespace App\Controllers;
+
+use ImageCrud\Core\ImageCrud;
+
+class ImagesExamples extends BaseController
+{
+
+    private function _example_output($output = null) {
+        if (isset($output->isJSONResponse) && $output->isJSONResponse) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo $output->output;
+            exit;
+        }
+
+        return view('image_crud/template.php', (array)$output);
+    }
+
+    public function example1(): string
+    {
+        $imageCrud = new ImageCrud();
+
+        $imageCrud->setPrimaryKeyField('id');
+        $imageCrud->setUrlField('url');
+        $imageCrud->setTable('example_1')
+            ->setImagePath('uploads');
+
+        $output = $imageCrud->render();
+
+        return $this->_example_output($output);
+    }
+}
 ```
 
 Limitations:
 
 Since this is basically the same library as we used for Codeigniter 3, it has the same limitations.
 - Image CRUD only works when the url that loads it is a standard Controller / View path. For example: 
-  `/controller/method` . Anything else won't work. For example: `/admin/controller/method`. This will most probably
-   change in the future
+  `/controller/method`. This will most probably change in the future
 
-https://www.grocerycrud.com/v1.x/image-crud
+https://www.grocerycrud.com/image-crud-codeigniter-4
